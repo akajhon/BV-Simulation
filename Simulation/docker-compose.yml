@@ -1,12 +1,18 @@
 version: '3.1'
 services:
-
+  rabbitmq:
+      image: rabbitmq:3-management-alpine
+      ports:
+        - "5672:5672"
+        - "15672:15672"
   bv:
     build:
       context: .
       dockerfile: /BolsaDeValores/Dockerfile_BV
     ports:
       - 5000:5000
+    links:
+      - rabbitmq
 
   hb:
     build:
@@ -15,6 +21,7 @@ services:
     ports:
       - 6000:6000
     links:
+      - rabbitmq
       - bv
 
   robo1:
@@ -22,6 +29,7 @@ services:
       context: .
       dockerfile: /BolsaDeValores/Dockerfile_RB
     links:
+      - rabbitmq
       - hb
 
   robo2:
@@ -29,4 +37,5 @@ services:
       context: .
       dockerfile: /BolsaDeValores/Dockerfile_RB
     links:
+      - rabbitmq
       - hb
