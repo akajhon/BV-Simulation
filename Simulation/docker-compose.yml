@@ -1,0 +1,32 @@
+version: '3.1'
+services:
+
+  bv:
+    build:
+      context: .
+      dockerfile: /BolsaDeValores/Dockerfile_BV
+    ports:
+      - 5000:5000
+
+  hb:
+    build:
+      context: .
+      dockerfile: /BolsaDeValores/Dockerfile_HB
+    ports:
+      - 6000:6000
+    links:
+      - bv
+
+  robo1:
+    build:
+      context: .
+      dockerfile: /BolsaDeValores/Dockerfile_RB
+    links:
+      - hb
+
+  robo2:
+    build:
+      context: .
+      dockerfile: /BolsaDeValores/Dockerfile_RB
+    links:
+      - hb

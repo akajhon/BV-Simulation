@@ -1,0 +1,7 @@
+FROM python:3.8-slim-buster
+
+WORKDIR /app
+
+COPY Robo_01.py /app
+
+CMD ["python", "./Robo_01.py"]

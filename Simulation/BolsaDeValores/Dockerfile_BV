@@ -1,0 +1,7 @@
+FROM python:3.8-slim-buster
+
+WORKDIR /app
+
+COPY BV.py /app
+
+CMD ["python", "./BV.py"]
