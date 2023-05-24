@@ -15,7 +15,6 @@ O sistema distribuído é responsável pelo controle de compra/venda de ações 
 - Mínimo de 2 robôs para cada HB existente
 - O relógio de cada processo, no início do seu funcionamento, deve ser recuperado do relógio do sistema
 - A cada ciclo de 10 segundos, o relógio local de cada processo deve ser modificado aleatoriamente em ±2s
-- 
 ***
 ## Tecnologias Utilizadas
 
@@ -25,7 +24,47 @@ O sistema distribuído é responsável pelo controle de compra/venda de ações 
 ***
 ## Como Executar
 
-Instruções sobre como executar o projeto serão adicionadas aqui.
+Siga estas etapas para executar este projeto:
+
+1. **Instalar o Docker**
+
+   Primeiro, você precisa ter o Docker instalado em sua máquina. Se ainda não o instalou, você pode baixar o Docker [aqui](https://www.docker.com/products/docker-desktop).
+
+2. **Construir as Imagens Docker**
+
+   No diretório raiz do projeto, onde estão localizados os Dockerfiles e o docker-compose.yml, execute o seguinte comando para construir as imagens Docker para a Bolsa de Valores, os Home Brokers e os Robôs:
+
+```
+docker-compose build
+```
+
+3. **Iniciar os Contêineres Docker**
+
+Depois que as imagens forem construídas, você pode iniciar todos os contêineres usando o comando:
+
+```
+docker-compose up
+```
+
+4. **Verificar a Execução**
+
+Os logs de cada contêiner podem ser visualizados usando o comando `docker logs`. Por exemplo, para ver os logs do contêiner da Bolsa de Valores, você pode usar:
+
+```
+docker logs bv
+```
+
+Substitua `bv` pelo nome do contêiner que você deseja ver os logs.
+
+5. **Parar a Execução**
+
+Para parar a execução de todos os contêineres, você pode usar o comando:
+
+```
+docker-compose down
+```
+
+Note que todas estas etapas devem ser realizadas no terminal ou linha de comando e assumem que você está no diretório onde o docker-compose.yml e os Dockerfiles estão localizados.
 
 ***
 ## Autores
