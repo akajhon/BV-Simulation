@@ -1,4 +1,4 @@
-# Projeto: Algoritmo de Berkeley
+# BV-Simulation - Algoritmo de Berkeley
 
 Este projeto é uma implementação do Algoritmo de Berkeley, um algoritmo que permite sincronizar diversos computadores em um sistema distribuído. Este projeto é particularmente focado em um sistema distribuído responsável pelo controle de compra/venda de ações em uma bolsa de valores.
 
