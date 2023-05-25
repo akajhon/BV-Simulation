@@ -67,7 +67,7 @@ install_requirements() {
 
     # Se eles não estiverem instalados, instale-os
     if [ $? -ne 0 ]; then
-        echo "\033[31m[!] Docker ou Docker Compose não estão instalados. Instalando... [!]\033[0m"
+        echo -e "\033[31m[!] Docker ou Docker Compose não estão instalados. Instalando... [!]\033[0m"
 
         sudo apt-get update
 
@@ -91,7 +91,7 @@ install_requirements() {
 
         sudo chmod +x /usr/local/bin/docker-compose
 
-        echo "\033[32m[!] Docker e Docker Compose instalados com sucesso. [!]\033[0m"
+        echo -e "\033[32m[!] Docker e Docker Compose instalados com sucesso. [!]\033[0m"
     fi
 }
 
