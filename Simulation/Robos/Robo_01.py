@@ -14,21 +14,23 @@ RESET = '\033[0m'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
 
-# Configura o logging para o 'HOMEBROKER'
-RB_logger = logging.getLogger('ROBO_01')
-RB_logger.setLevel(logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-# Cria um manipulador de log que escreve para stdout
-handler = logging.StreamHandler(sys.stdout)
+# # Configura o logging para o 'HOMEBROKER'
+# RB_logger = logging.getLogger('ROBO_01')
+# RB_logger.setLevel(logging.INFO)
 
-# Cria um formatador de log
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# # Cria um manipulador de log que escreve para stdout
+# handler = logging.StreamHandler(sys.stdout)
 
-# Adiciona o formatador ao manipulador
-handler.setFormatter(formatter)
+# # Cria um formatador de log
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# Adiciona o manipulador ao logger
-RB_logger.addHandler(handler)
+# # Adiciona o formatador ao manipulador
+# handler.setFormatter(formatter)
+
+# # Adiciona o manipulador ao logger
+# RB_logger.addHandler(handler)
 
 class Robo:
     def __init__(self, host='rabbitmq'):

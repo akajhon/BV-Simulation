@@ -44,7 +44,7 @@ stop_services() {
 
 view_logs(){
   echo -e "\033[32m[!] Logs dos serviços em Execução: [!]\033[0m"
-  sudo docker compose logs --tail=0
+  sudo docker compose logs
 }
 
 verify_docker() {

@@ -15,21 +15,23 @@ RESET = '\033[0m'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
 
-# Configura o logging para o 'HOMEBROKER'
-HB_logger = logging.getLogger('HOMEBROKER')
-HB_logger.setLevel(logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-# Cria um manipulador de log que escreve para stdout
-handler = logging.StreamHandler(sys.stdout)
+# # Configura o logging para o 'HOMEBROKER'
+# HB_logger = logging.getLogger('HOMEBROKER')
+# HB_logger.setLevel(logging.INFO)
 
-# Cria um formatador de log
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# # Cria um manipulador de log que escreve para stdout
+# handler = logging.StreamHandler(sys.stdout)
 
-# Adiciona o formatador ao manipulador
-handler.setFormatter(formatter)
+# # Cria um formatador de log
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# Adiciona o manipulador ao logger
-HB_logger.addHandler(handler)
+# # Adiciona o formatador ao manipulador
+# handler.setFormatter(formatter)
+
+# # Adiciona o manipulador ao logger
+# HB_logger.addHandler(handler)
 
 
 class HomeBroker:
@@ -49,7 +51,9 @@ class HomeBroker:
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
-            if pedido:
+            if pedido == "Sicronizar":
+                pass
+            elif pedido:
                 nome_acao, operacao, quantidade, timestamp = pedido.split(',')
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio}"
