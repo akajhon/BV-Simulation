@@ -11,10 +11,26 @@ VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
 RESET = '\033[0m'
 
-# Configura o logging
+# Configura o logging para o 'pika'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+# Configura o logging para o 'HOMEBROKER'
+HB_logger = logging.getLogger('HOMEBROKER')
+HB_logger.setLevel(logging.INFO)
+
+# Cria um manipulador de log que escreve para stdout
+handler = logging.StreamHandler(sys.stdout)
+
+# Cria um formatador de log
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Adiciona o formatador ao manipulador
+handler.setFormatter(formatter)
+
+# Adiciona o manipulador ao logger
+HB_logger.addHandler(handler)
+
 
 class HomeBroker:
     def __init__(self, host='rabbitmq'):
@@ -34,7 +50,7 @@ class HomeBroker:
         try:
             pedido = body.decode('utf-8')
             if pedido:
-                nome_acao, operacao, quantidade = pedido.split(',')
+                nome_acao, operacao, quantidade, timestamp = pedido.split(',')
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio}"
                 self.channel.basic_publish(exchange='', routing_key='bv', body=pedido_bv.encode('utf-8'))
