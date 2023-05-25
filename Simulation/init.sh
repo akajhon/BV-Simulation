@@ -27,3 +27,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "\033[32m[!] Todos os serviços foram construídos e estão em execução! [!]\033[0m"
+
+echo "\033[32m[!] Logs dos serviços em Execução: [!]\033[0m"
+
+sudo docker-compose logs --tail=0 --follow
