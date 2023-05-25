@@ -1,41 +1,42 @@
 version: '3.1'
 services:
   rabbitmq:
-      image: rabbitmq:3-management-alpine
-      ports:
-        - "5672:5672"
-        - "15672:15672"
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      
   bv:
     build:
       context: .
-      dockerfile: /BolsaDeValores/Dockerfile_BV
-    ports:
-      - 5000:5000
-    links:
+      dockerfile: ./BolsaDeValores/Dockerfile_BV
+    container_name: BolsadeValores
+    restart: on-failure
+    depends_on:
       - rabbitmq
 
   hb:
     build:
       context: .
-      dockerfile: /BolsaDeValores/Dockerfile_HB
-    ports:
-      - 6000:6000
-    links:
-      - rabbitmq
+      dockerfile: ./Homebrokers/Dockerfile_HB
+    container_name: HomeBroker01
+    restart: on-failure
+    depends_on:
       - bv
 
-  robo1:
+  robo:
     build:
       context: .
-      dockerfile: /BolsaDeValores/Dockerfile_RB
-    links:
-      - rabbitmq
+      dockerfile: ./Robos/Dockerfile_RB
+    container_name: RoboTrader01
+    restart: on-failure
+    depends_on:
       - hb
 
-  robo2:
-    build:
-      context: .
-      dockerfile: /BolsaDeValores/Dockerfile_RB
-    links:
-      - rabbitmq
-      - hb
+volumes:
+  rabbitmq_data:
