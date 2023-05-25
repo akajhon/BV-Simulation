@@ -16,14 +16,14 @@ EOF
 start_services() {
   echo -e "\033[32m[!] Construindo e executando containers Docker... [!]\033[0m"
 
-  sudo docker-compose build
+  sudo docker compose build
 
   if [ $? -ne 0 ]; then
     echo -e "\033[31m[!] A construção dos serviços falhou... [!]\033[0m"
     exit 1
   fi
 
-  sudo docker-compose up -d
+  sudo docker compose up -d
 
   if [ $? -ne 0 ]; then
     echo -e "\033[31m[!] A execução dos serviços falhou... [!]\033[0m"
@@ -34,17 +34,17 @@ start_services() {
 
   echo -e "\033[32m[!] Logs dos serviços em Execução: [!]\033[0m"
 
-  sudo docker-compose logs --tail=0 --follow
+  sudo docker compose logs --tail=0 --follow
 }
 
 stop_services() {
   echo -e "\033[31m[!] Parando todos os serviços... [!]\033[0m"
-  sudo docker-compose down
+  sudo docker compose down
 }
 
 view_logs(){
   echo -e "\033[32m[!] Logs dos serviços em Execução: [!]\033[0m"
-  sudo docker-compose logs --tail=0
+  sudo docker compose logs --tail=0
 }
 
 verify_docker() {
@@ -53,7 +53,7 @@ verify_docker() {
         return 1
     fi
 
-    docker-compose --version > /dev/null 2>&1
+    docker compose --version > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         return 1
     fi
