@@ -12,27 +12,14 @@ VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
 RESET = '\033[0m'
 
-# Configura o logging para o 'pika'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-# # Configura o logging para o 'HOMEBROKER'
-# BV_logger = logging.getLogger('HOMEBROKER')
-# BV_logger.setLevel(logging.INFO)
-
-# # Cria um manipulador de log que escreve para stdout
-# handler = logging.StreamHandler(sys.stdout)
-
-# # Cria um formatador de log
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# # Adiciona o formatador ao manipulador
-# handler.setFormatter(formatter)
-
-# # Adiciona o manipulador ao logger
-# BV_logger.addHandler(handler)
+BV_logger = logging.getLogger('BOLSADEVALORES')
+BV_logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+handler.setFormatter(formatter)
+BV_logger.addHandler(handler)
 
 class BolsaValores:
     def __init__(self, host='rabbitmq'):
@@ -46,14 +33,16 @@ class BolsaValores:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logging.info(AMARELO + f'[+] BolsadeValores aguardando mensagens. Para cancelar pressione CTRL+C' + RESET)
+        BV_logger.info(AMARELO + f'[+] BolsadeValores aguardando mensagens. Para cancelar pressione CTRL+C' + RESET)
         self.channel.start_consuming()
 
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
             if pedido == "Sincronizar":
-                pass
+                BV_logger.info(AMARELO + f'[+] Pedido de Sincronização Recebido. Iniciando...' + RESET)
+                self.channel.basic_publish(exchange='', routing_key='bv', body=f"{self.relogio}".encode('utf-8'))
+                #pass
             elif pedido:
                 nome_acao, operacao, quantidade, relogio_hb = pedido.split(',')
                 quantidade = int(quantidade)
@@ -64,7 +53,7 @@ class BolsaValores:
                     self.processar_pedido(nome_acao, operacao, quantidade)
                     self.channel.basic_publish(exchange='', routing_key='bv', body=f"{nome_acao},{operacao},{quantidade},{self.relogio}".encode('utf-8'))
         except Exception as e:
-            logging.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
+            BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
@@ -78,12 +67,12 @@ class BolsaValores:
             elif operacao == 'venda':
                 acao['quantidade'] -= quantidade
                 acao['valor'] *= 0.99
-            logging.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
+            BV_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
         except Exception as e:
-            logging.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
+            BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
 
 if __name__ == "__main__":
     bv = BolsaValores()
     while True:
         bv.atualizar_relogio()
-        time.sleep(10)
+        time.sleep(5)

@@ -11,27 +11,14 @@ VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
 RESET = '\033[0m'
 
-# Configura o logging para o 'pika'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-# # Configura o logging para o 'HOMEBROKER'
-# HB_logger = logging.getLogger('HOMEBROKER')
-# HB_logger.setLevel(logging.INFO)
-
-# # Cria um manipulador de log que escreve para stdout
-# handler = logging.StreamHandler(sys.stdout)
-
-# # Cria um formatador de log
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# # Adiciona o formatador ao manipulador
-# handler.setFormatter(formatter)
-
-# # Adiciona o manipulador ao logger
-# HB_logger.addHandler(handler)
+HB_logger = logging.getLogger('HOMEBROKER')
+HB_logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+handler.setFormatter(formatter)
+HB_logger.addHandler(handler)
 
 
 class HomeBroker:
@@ -45,14 +32,16 @@ class HomeBroker:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logging.info(AMARELO + f'[+] HomeBroker aguardando Mensagens. Para cancelar pressione CTRL+C [+]' + RESET)
+        HB_logger.info(AMARELO + f'[+] HomeBroker aguardando Mensagens. Para cancelar pressione CTRL+C [+]' + RESET)
         self.channel.start_consuming()
 
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
             if pedido == "Sicronizar":
-                pass
+                #pass
+                HB_logger.info(AMARELO + '[+] Iniciando sincronização com ROBO [+]' + RESET)
+                self.sincronizar_relogio()
             elif pedido:
                 nome_acao, operacao, quantidade, timestamp = pedido.split(',')
                 quantidade = int(quantidade)
@@ -60,12 +49,12 @@ class HomeBroker:
                 self.channel.basic_publish(exchange='', routing_key='bv', body=pedido_bv.encode('utf-8'))
                 resposta = self.channel.basic_get('bv')[2].decode('utf-8')
                 if resposta == "Sincronizar":
-                    logging.info(AMARELO + '[+] Iniciando sincronização com BV [+]' + RESET)
+                    HB_logger.info(AMARELO + '[+] Iniciando sincronização com BV [+]' + RESET)
                     self.sincronizar_relogio()
                 else:
-                    logging.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
+                    HB_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
         except Exception as e:
-            logging.info(VERMELHO + f'[!] ERRO NO HB: {e} [!]' + RESET)
+            HB_logger.info(VERMELHO + f'[!] ERRO NO HB: {e} [!]' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
@@ -80,4 +69,4 @@ if __name__ == "__main__":
     hb = HomeBroker()
     while True:
         hb.atualizar_relogio()
-        time.sleep(10)
+        time.sleep(5)
