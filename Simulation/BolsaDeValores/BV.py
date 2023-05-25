@@ -12,10 +12,25 @@ VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
 RESET = '\033[0m'
 
-# Configura o logging
+# Configura o logging para o 'pika'
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+# Configura o logging para o 'HOMEBROKER'
+BV_logger = logging.getLogger('HOMEBROKER')
+BV_logger.setLevel(logging.INFO)
+
+# Cria um manipulador de log que escreve para stdout
+handler = logging.StreamHandler(sys.stdout)
+
+# Cria um formatador de log
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Adiciona o formatador ao manipulador
+handler.setFormatter(formatter)
+
+# Adiciona o manipulador ao logger
+BV_logger.addHandler(handler)
 
 class BolsaValores:
     def __init__(self, host='rabbitmq'):
