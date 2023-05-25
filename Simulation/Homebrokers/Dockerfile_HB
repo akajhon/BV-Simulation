@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y netcat
 
 COPY ./Homebrokers/HB.py /app
 
-COPY ./autostart.sh /app
+COPY ./Scripts/autostart.sh /app
 
 RUN chmod +x ./autostart.sh
 
