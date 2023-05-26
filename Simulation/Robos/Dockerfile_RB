@@ -1,10 +1,12 @@
 FROM python:3.8
 
+ENV TZ=America/Sao_Paulo
+
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y netcat
 
-COPY ./Robos/Robo_01.py /app
+COPY ./Robos/Robo.py /app
 
 COPY ./Scripts/autostart.sh /app
 
@@ -12,4 +14,4 @@ RUN chmod +x ./autostart.sh
 
 RUN pip install pika
 
-CMD ["./autostart.sh", "rabbitmq", "python", "./Robo_01.py"]
+CMD ["./autostart.sh", "rabbitmq", "python", "./Robo.py"]

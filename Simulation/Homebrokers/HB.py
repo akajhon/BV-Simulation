@@ -13,12 +13,11 @@ RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-HB_logger = logging.getLogger('HOMEBROKER')
-HB_logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger()
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%M:%S')
+handler = logger.handlers[0]
 handler.setFormatter(formatter)
-HB_logger.addHandler(handler)
 
 
 class HomeBroker:
@@ -32,14 +31,14 @@ class HomeBroker:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        HB_logger.info(AMARELO + f'[+] HomeBroker aguardando Mensagens. Para cancelar pressione CTRL+C [+]' + RESET)
+        logger.info(AMARELO + f'[#] HomeBroker aguardando Mensagens. Para cancelar pressione CTRL+C' + RESET)
         self.channel.start_consuming()
 
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
             if "Sincronizar" in pedido:
-                HB_logger.info(AMARELO + '[+] Iniciando sincronização com BV [+]' + RESET)
+                logger.info(AMARELO + '[#] Iniciando sincronização com BV' + RESET)
                 label, tempo_bv = pedido.split(',')
                 self.sincronizar_relogio(tempo_bv)
             elif pedido:
@@ -47,18 +46,21 @@ class HomeBroker:
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio}"
                 self.channel.basic_publish(exchange='', routing_key='bv', body=pedido_bv.encode('utf-8'))
-                HB_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
+                logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
         except Exception as e:
-            HB_logger.info(VERMELHO + f'[!] ERRO NO HB: {e} [!]' + RESET)
+            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
 
     def sincronizar_relogio(self, tempo_bv):
         self.channel.basic_publish(exchange='', routing_key='bv', body=f"Sincronizar,{self.relogio}".encode('utf-8'))
-        HB_logger.info(AMARELO + f'[+] Tempo do HB (antes de sincronizar): {self.relogio} [+]' + RESET)
+        logger.info(AMARELO + f'[#] Tempo do HB (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_bv)) / 2
-        HB_logger.info(AMARELO + f'[+] Tempo do HB (após sincronizar): {self.relogio} [+]' + RESET)
+        logger.info(AMARELO + f'[#] Tempo do HB (após sincronizar): {self.formata_relogio()}' + RESET)
+
+    def formata_relogio(self):
+        return time.strftime('%H:%M:%S', time.localtime(self.relogio))
 
 
 if __name__ == "__main__":

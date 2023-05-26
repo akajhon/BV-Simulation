@@ -12,12 +12,11 @@ RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-RB_logger = logging.getLogger('ROBO_01')
-RB_logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger()
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%M:%S')
+handler = logger.handlers[0]
 handler.setFormatter(formatter)
-RB_logger.addHandler(handler)
 
 
 class Robo:
@@ -33,9 +32,9 @@ class Robo:
             quantidade = random.randint(1, 10)
             pedido = f"{nome_acao},{operacao},{quantidade}"
             self.channel.basic_publish(exchange='', routing_key='hb', body=pedido.encode('utf-8'))
-            RB_logger.info(VERDE + f"Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao HB com sucesso!" + RESET)
+            logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao HB com sucesso!" + RESET)
         except Exception as e:
-            RB_logger.info(VERMELHO + f'[!] ERRO NO ROBO: {e} [!]' + RESET)
+            logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
 
 
 if __name__ == "__main__":

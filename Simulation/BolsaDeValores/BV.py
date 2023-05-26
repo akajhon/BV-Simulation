@@ -14,12 +14,11 @@ RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
 pika_logger.setLevel(logging.WARNING)
-BV_logger = logging.getLogger('BOLSADEVALORES')
-BV_logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', '%H:%M:%S')
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(sys.stdout)])
+logger = logging.getLogger()
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%M:%S')
+handler = logger.handlers[0]
 handler.setFormatter(formatter)
-BV_logger.addHandler(handler)
 
 
 class BolsaValores:
@@ -34,7 +33,7 @@ class BolsaValores:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        BV_logger.info(AMARELO + f'[+] BolsadeValores aguardando mensagens. Para cancelar pressione CTRL+C' + RESET)
+        logger.info(AMARELO + f'[#] BolsadeValores aguardando mensagens. Para cancelar pressione CTRL+C' + RESET)
         self.channel.start_consuming()
 
     def handle_message(self, ch, method, properties, body):
@@ -52,7 +51,7 @@ class BolsaValores:
                 self.processar_pedido(nome_acao, operacao, quantidade)
                 # self.channel.basic_publish(exchange='', routing_key='bv', body=f"{nome_acao},{operacao},{quantidade},{self.relogio}".encode('utf-8'))
         except Exception as e:
-            BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
+            logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
@@ -66,15 +65,18 @@ class BolsaValores:
             elif operacao == 'venda':
                 acao['quantidade'] -= quantidade
                 acao['valor'] *= 0.99
-            BV_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
+            logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
         except Exception as e:
-            BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
+            logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
 
     def sincronizar_relogio(self, tempo_hb):
-        BV_logger.info(AMARELO + f'[+] Tempo do BV (antes de sincronizar): {self.relogio} [+]' + RESET)
+        logger.info(AMARELO + f'[#] Tempo do BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_hb)) / 2
-        BV_logger.info(AMARELO + f'[+] Tempo do BV (após sincronizar): {self.relogio} [+]' + RESET)
-        BV_logger.info(AMARELO + '[+] Finalizada sincronização com HB [+]' + RESET)
+        logger.info(AMARELO + f'[#] Tempo do BV (após sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(AMARELO + '[#] Finalizada sincronização com HB' + RESET)
+
+    def formata_relogio(self):
+        return time.strftime('%H:%M:%S', time.localtime(self.relogio))
 
 
 if __name__ == "__main__":
