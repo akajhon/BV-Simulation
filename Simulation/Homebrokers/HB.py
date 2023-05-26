@@ -38,35 +38,31 @@ class HomeBroker:
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
-            if pedido == "Sicronizar":
-                #pass
-                HB_logger.info(AMARELO + '[+] Iniciando sincronização com ROBO [+]' + RESET)
-                self.sincronizar_relogio()
+            if "Sincronizar" in pedido:
+                HB_logger.info(AMARELO + '[+] Iniciando sincronização com BV [+]' + RESET)
+                label, tempo_bv = pedido.split(',')
+                self.sincronizar_relogio(tempo_bv)
             elif pedido:
-                nome_acao, operacao, quantidade, timestamp = pedido.split(',')
+                nome_acao, operacao, quantidade = pedido.split(',')
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio}"
                 self.channel.basic_publish(exchange='', routing_key='bv', body=pedido_bv.encode('utf-8'))
-                resposta = self.channel.basic_get('bv')[2].decode('utf-8')
-                if resposta == "Sincronizar":
-                    HB_logger.info(AMARELO + '[+] Iniciando sincronização com BV [+]' + RESET)
-                    self.sincronizar_relogio()
-                else:
-                    HB_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
+                HB_logger.info(VERDE + f'Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
         except Exception as e:
             HB_logger.info(VERMELHO + f'[!] ERRO NO HB: {e} [!]' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
 
-    def sincronizar_relogio(self):
-        self.relogio = time.time()
-        self.channel.basic_publish(exchange='', routing_key='bv', body=str(self.relogio).encode('utf-8'))
-        tempo_coordenador = float(self.channel.basic_get('bv')[2].decode('utf-8'))
-        self.relogio = (self.relogio + tempo_coordenador) / 2
+    def sincronizar_relogio(self, tempo_bv):
+        self.channel.basic_publish(exchange='', routing_key='bv', body=f"Sincronizar,{self.relogio}".encode('utf-8'))
+        HB_logger.info(AMARELO + f'[+] Tempo do HB (antes de sincronizar): {self.relogio} [+]' + RESET)
+        self.relogio = (self.relogio + float(tempo_bv)) / 2
+        HB_logger.info(AMARELO + f'[+] Tempo do HB (após sincronizar): {self.relogio} [+]' + RESET)
+
 
 if __name__ == "__main__":
     hb = HomeBroker()
     while True:
         hb.atualizar_relogio()
-        time.sleep(5)
+        time.sleep(10)

@@ -21,6 +21,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 BV_logger.addHandler(handler)
 
+
 class BolsaValores:
     def __init__(self, host='rabbitmq'):
         self.relogio = time.time()
@@ -39,19 +40,17 @@ class BolsaValores:
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
-            if pedido == "Sincronizar":
-                BV_logger.info(AMARELO + f'[+] Pedido de Sincronização Recebido. Iniciando...' + RESET)
-                self.channel.basic_publish(exchange='', routing_key='bv', body=f"{self.relogio}".encode('utf-8'))
-                #pass
+            if "Sincronizar" in pedido:
+                label, tempo_hb = pedido.split(',')
+                self.sincronizar_relogio(tempo_hb)
             elif pedido:
                 nome_acao, operacao, quantidade, relogio_hb = pedido.split(',')
                 quantidade = int(quantidade)
                 relogio_hb = float(relogio_hb)
                 if relogio_hb > self.relogio + 2 or relogio_hb < self.relogio - 2:
-                    self.channel.basic_publish(exchange='', routing_key='bv', body="Sincronizar".encode('utf-8'))
-                else:
-                    self.processar_pedido(nome_acao, operacao, quantidade)
-                    self.channel.basic_publish(exchange='', routing_key='bv', body=f"{nome_acao},{operacao},{quantidade},{self.relogio}".encode('utf-8'))
+                    self.channel.basic_publish(exchange='', routing_key='hb', body=f"Sincronizar,{self.relogio}".encode('utf-8'))
+                self.processar_pedido(nome_acao, operacao, quantidade)
+                # self.channel.basic_publish(exchange='', routing_key='bv', body=f"{nome_acao},{operacao},{quantidade},{self.relogio}".encode('utf-8'))
         except Exception as e:
             BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
 
@@ -71,8 +70,15 @@ class BolsaValores:
         except Exception as e:
             BV_logger.info(VERMELHO + f'[!] ERRO NO BV: {e} [!]' + RESET)
 
+    def sincronizar_relogio(self, tempo_hb):
+        BV_logger.info(AMARELO + f'[+] Tempo do BV (antes de sincronizar): {self.relogio} [+]' + RESET)
+        self.relogio = (self.relogio + float(tempo_hb)) / 2
+        BV_logger.info(AMARELO + f'[+] Tempo do BV (após sincronizar): {self.relogio} [+]' + RESET)
+        BV_logger.info(AMARELO + '[+] Finalizada sincronização com HB [+]' + RESET)
+
+
 if __name__ == "__main__":
     bv = BolsaValores()
     while True:
         bv.atualizar_relogio()
-        time.sleep(5)
+        time.sleep(10)
