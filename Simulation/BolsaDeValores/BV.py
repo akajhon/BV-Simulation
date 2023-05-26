@@ -25,12 +25,44 @@ class BolsaValores:
     def __init__(self, host='rabbitmq'):
         self.relogio = time.time()
         self.acoes = defaultdict(lambda: {'quantidade': 100, 'valor': 50.0})
+        # self.acoes = {
+        #     "ACAO1": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO2": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO3": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO4": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO5": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO6": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO7": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+        #     "ACAO8": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)}
+        # }
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = self.connection.channel()
+        
+        #  # Declarar a exchange de tópicos
+        # self.channel.exchange_declare(exchange='topic_logs', exchange_type='topic')
+
+        # # Declarar as filas para cada HomeBroker
+        # self.queues = ['hb1', 'hb2', 'hb3', 'hb4', 'hb5']
+        # for queue in self.queues:
+        #     self.channel.queue_declare(queue=queue)
+        #     self.channel.queue_bind(exchange='topic_logs', queue=queue, routing_key=queue)
+            
         self.channel.queue_declare(queue='bv')
         self.channel.queue_declare(queue='hb')
         self.channel.basic_consume(queue='bv', on_message_callback=self.handle_message, auto_ack=True)
         threading.Thread(target=self.start_consuming).start()
+        
+        # # Consumir mensagens de cada fila
+        # for queue in self.queues:
+        #     self.channel.basic_consume(queue=queue, on_message_callback=self.handle_message, auto_ack=True)
+
+        # threading.Thread(target=self.start_consuming).start()
+        # self.enviar_acoes()
+        
+        # def enviar_acoes(self):
+        #     for nome_acao, acao in self.acoes.items():
+        #         for queue in self.queues:
+        #             self.channel.basic_publish(exchange='topic_logs', routing_key=queue, body=f"{nome_acao},{acao['quantidade']},{acao['valor']}".encode('utf-8'))
 
     def start_consuming(self):
         logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)

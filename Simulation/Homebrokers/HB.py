@@ -19,6 +19,25 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
+# class HomeBroker:
+#     def __init__(self, id, host='rabbitmq'):
+#         self.id = id
+#         self.relogio = time.time()
+#         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+#         self.channel = self.connection.channel()
+        
+#         # Declarar a exchange de tópicos
+#         self.channel.exchange_declare(exchange='topic_logs', exchange_type='topic')
+
+#         # Declarar a fila para este HomeBroker
+#         self.channel.queue_declare(queue=f'hb{id}')
+#         self.channel.queue_bind(exchange='topic_logs', queue=f'hb{id}', routing_key=f'hb{id}')
+        
+#         self.channel.basic_consume(queue=f'hb{id}', on_message_callback=self.handle_message, auto_ack=True)
+#         threading.Thread(target=self.start_consuming).start()
+
+#         Esta abordagem permite que cada HomeBroker seja identificado de forma única e que as mensagens sejam roteadas de forma eficiente, 
+#         garantindo que cada HomeBroker e seus robôs só recebam as mensagens que lhes são destinadas.
 
 class HomeBroker:
     def __init__(self, host='rabbitmq'):
