@@ -33,7 +33,7 @@ class BolsaValores:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logger.info(AMARELO + f'[#] BolsadeValores aguardando mensagens. Para cancelar pressione CTRL+C' + RESET)
+        logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
         self.channel.start_consuming()
 
     def handle_message(self, ch, method, properties, body):
