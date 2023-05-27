@@ -27,6 +27,7 @@ class Robo:
         self.hb_id = hb_id
         self.acoes = {}
         self.recebeu_acoes = False
+        self.conectado = False
         self.relogio = time.time()
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = self.connection.channel()
@@ -63,17 +64,19 @@ class Robo:
 
     def realizar_operacao(self):
         try:
-            if self.recebeu_acoes == True:
+            if self.recebeu_acoes == True and self.conectado == False:
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
                 self.channel = self.connection.channel()
                 self.channel.exchange_declare(exchange='exchange_hb', exchange_type='direct')
                 self.channel.queue_declare(queue=f'hb{self.hb_id}')
-            nome_acao = random.choice(['ACAO1', 'ACAO2', 'ACAO3'])
-            operacao = random.choice(['compra', 'venda'])
-            quantidade = random.randint(1, 10)
-            pedido = f"{nome_acao},{operacao},{quantidade}"
-            self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
-            logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
+                self.conectado = True
+            if len(self.acoes) > 0:
+                nome_acao = random.choice(list(self.acoes.keys()))
+                operacao = random.choice(['compra', 'venda'])
+                quantidade = random.randint(1, self.acoes[nome_acao]['quantidade'])
+                pedido = f"{nome_acao},{operacao},{quantidade}"
+                self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
+                logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 

@@ -40,7 +40,7 @@ class HomeBroker:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logger.info(AMARELO + f'[?] {self.hb_id} aguardando mensagens...' + RESET)
+        logger.info(AMARELO + f'[?] hb{self.hb_id} aguardando mensagens...' + RESET)
         self.channel.start_consuming()
 
     def solicita_lista(self):
