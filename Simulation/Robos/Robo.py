@@ -19,6 +19,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
+
 class Robo:
     def __init__(self, hb_id='1', host='rabbitmq'):
         self.hb_id = hb_id
@@ -40,7 +41,7 @@ class Robo:
     def realizar_operacao(self):
         try:
             if self.recebeu_acoes == True:
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))  # Reconectar
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
                 self.channel = self.connection.channel()
                 self.channel.exchange_declare(exchange='exchange_hb', exchange_type='direct')
                 self.channel.queue_declare(queue=f'hb{self.hb_id}')
@@ -73,7 +74,8 @@ class Robo:
     def solicita_lista(self):
         logger.info(AMARELO + f'[#] ROBO{self.hb_id} Solicitando Lista de Ações ao HB...' + RESET)
         pedido_bv = f"LRobo,robo{self.hb_id}"
-        self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido_bv.encode('utf-8'))    
+        self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido_bv.encode('utf-8'))
+
 
 if __name__ == "__main__":
     hb_id = sys.argv[1] if len(sys.argv) > 1 else '1'

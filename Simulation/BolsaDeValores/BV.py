@@ -20,6 +20,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
+
 class BolsaValores:
     def __init__(self, host='rabbitmq'):
         self.relogio = time.time()
@@ -96,6 +97,7 @@ class BolsaValores:
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
+
 
 if __name__ == "__main__":
     bv = BolsaValores()

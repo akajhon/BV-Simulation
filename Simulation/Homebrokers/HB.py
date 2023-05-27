@@ -19,6 +19,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
+
 class HomeBroker:
     def __init__(self, host='rabbitmq', hb_id=0):
         self.hb_id = hb_id
@@ -35,7 +36,7 @@ class HomeBroker:
         self.channel.queue_bind(exchange='exchange_hb', queue=queue_name, routing_key=f'hb{hb_id}')
         self.channel.basic_consume(queue=queue_name, on_message_callback=self.handle_message, auto_ack=True)
         threading.Thread(target=self.start_consuming).start()
-        
+
     def start_consuming(self):
         logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
         self.channel.start_consuming()
@@ -51,7 +52,7 @@ class HomeBroker:
             if "Lista" in pedido:
                 logger.info(AMARELO + '[#] Lista de ações recebida do BV!' + RESET)
                 label, nome_acao, quantidade, valor = pedido.split(',')
-                self.acoes[nome_acao] = {'quantidade':quantidade, 'valor': valor}
+                self.acoes[nome_acao] = {'quantidade': quantidade, 'valor': valor}
                 self.repassa_lista()
             elif "LRobo" in pedido:
                 logger.info(AMARELO + '[#] ROBO solicitou Lista de acoes' + RESET)
@@ -66,7 +67,7 @@ class HomeBroker:
                 nome_acao, operacao, quantidade = pedido.split(',')
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio},hb{self.hb_id}"
-                self.channel.basic_publish(exchange='exchange_bv', routing_key='bv',body=pedido_bv.encode('utf-8'))
+                self.channel.basic_publish(exchange='exchange_bv', routing_key='bv', body=pedido_bv.encode('utf-8'))
                 logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
@@ -87,6 +88,7 @@ class HomeBroker:
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
+
 
 if __name__ == "__main__":
     hb_id = int(sys.argv[1]) if len(sys.argv) > 1 else 0
