@@ -9,6 +9,8 @@ import threading
 VERDE = '\033[92m'
 VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
+ROXO = '\033[95m'
+CIANO = '\033[96m'
 RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
@@ -38,29 +40,34 @@ class HomeBroker:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
+        logger.info(AMARELO + f'[?] {self.hb_id} aguardando mensagens...' + RESET)
         self.channel.start_consuming()
 
     def solicita_lista(self):
-        logger.info(AMARELO + f'[#] HB{self.hb_id} Solicitando Lista de Ações ao BV...' + RESET)
+        logger.info(ROXO + f'[*] hb{self.hb_id} solicitando lista de ações a BV...' + RESET)
         pedido_bv = f"Lista,hb{self.hb_id}"
         self.channel.basic_publish(exchange='exchange_bv', routing_key='bv', body=pedido_bv.encode('utf-8'))
+
+    def repassa_lista(self):
+        lista_acoes = f"Lista;{self.acoes};hb{self.hb_id}"
+        self.channel.basic_publish(exchange='exchange_robos', routing_key=self.robo_id, body=lista_acoes.encode('utf-8'))
+        logger.info(ROXO + f'[*] Lista de ações enviada pelo hb{self.hb_id} ao {self.robo_id}!' + RESET)
 
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
             if "Lista" in pedido:
-                logger.info(AMARELO + '[#] Lista de ações recebida do BV!' + RESET)
+                logger.info(ROXO + f'[*] Lista de ações recebida da BV no hb{self.hb_id}!' + RESET)
                 label, nome_acao, quantidade, valor = pedido.split(',')
                 self.acoes[nome_acao] = {'quantidade': quantidade, 'valor': valor}
                 self.repassa_lista()
             elif "LRobo" in pedido:
-                logger.info(AMARELO + '[#] ROBO solicitou Lista de acoes' + RESET)
                 label, robo_id = pedido.split(',')
+                logger.info(ROXO + f'[*] {robo_id} solicitou a lista de ações' + RESET)
                 self.robo_id = robo_id
                 self.solicita_lista()
             elif "Sincronizar" in pedido:
-                logger.info(AMARELO + '[#] Iniciando sincronização com BV' + RESET)
+                logger.info(CIANO + '[$] Iniciando sincronização com a BV...' + RESET)
                 label, tempo_bv = pedido.split(',')
                 self.sincronizar_relogio(tempo_bv)
             elif pedido:
@@ -68,7 +75,7 @@ class HomeBroker:
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio},hb{self.hb_id}"
                 self.channel.basic_publish(exchange='exchange_bv', routing_key='bv', body=pedido_bv.encode('utf-8'))
-                logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao BV com Sucesso!' + RESET)
+                logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado a BV com sucesso!' + RESET)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
@@ -77,14 +84,9 @@ class HomeBroker:
 
     def sincronizar_relogio(self, tempo_bv):
         self.channel.basic_publish(exchange='exchange_bv', routing_key='bv', body=f"Sincronizar,{self.relogio},hb{self.hb_id}".encode('utf-8'))
-        logger.info(AMARELO + f'[#] Tempo do HB (antes de sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(CIANO + f'[$] Tempo do hb{self.hb_id} (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_bv)) / 2
-        logger.info(AMARELO + f'[#] Tempo do HB (após sincronizar): {self.formata_relogio()}' + RESET)
-
-    def repassa_lista(self):
-        lista_acoes = f"Lista;{self.acoes};hb{self.hb_id}"
-        self.channel.basic_publish(exchange='exchange_robos', routing_key=self.robo_id, body=lista_acoes.encode('utf-8'))
-        logger.info(VERDE + f'[+] Lista de ações enviada pelo HB{self.hb_id} !' + RESET)
+        logger.info(CIANO + f'[$] Tempo do hb{self.hb_id} (após sincronizar): {self.formata_relogio()}' + RESET)
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))

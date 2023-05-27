@@ -9,6 +9,8 @@ import threading
 VERDE = '\033[92m'
 VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
+ROXO = '\033[95m'
+CIANO = '\033[96m'
 RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
@@ -38,6 +40,27 @@ class Robo:
         self.solicita_lista()
         threading.Thread(target=self.start_consuming).start()
 
+    def start_consuming(self):
+        logger.info(AMARELO + f'[?] robo{self.hb_id} aguardando mensagens...' + RESET)
+        self.channel.start_consuming()
+
+    def solicita_lista(self):
+        logger.info(ROXO + f'[*] robo{self.hb_id} solicitando lista de ações ao hb{self.hb_id}...' + RESET)
+        pedido_bv = f"LRobo,robo{self.hb_id}"
+        self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido_bv.encode('utf-8'))
+
+    def handle_message(self, ch, method, properties, body):
+        try:
+            pedido = body.decode('utf-8')
+            if "Lista" in pedido:
+                logger.info(ROXO + f'[*] Lista de ações recebida no robo{self.hb_id}!' + RESET)
+                label, acoes, hb_id = pedido.split(';')
+                logger.info(ROXO + f'[*] {acoes} recebidas de {hb_id}' + RESET)
+                self.acoes = eval(acoes)
+                self.recebeu_acoes = True
+        except Exception as e:
+            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
+
     def realizar_operacao(self):
         try:
             if self.recebeu_acoes == True:
@@ -50,31 +73,9 @@ class Robo:
             quantidade = random.randint(1, 10)
             pedido = f"{nome_acao},{operacao},{quantidade}"
             self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
-            logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao HB com sucesso!" + RESET)
+            logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
         except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO NO ROBO1: {e} [!]' + RESET)
-
-    def handle_message(self, ch, method, properties, body):
-        try:
-            logger.info(AMARELO + '[#] Pedido recebido no Robo!' + RESET)
-            pedido = body.decode('utf-8')
-            if "Lista" in pedido:
-                logger.info(AMARELO + '[#] Lista de ações recebida no Robo!' + RESET)
-                label, acoes, hb_id = pedido.split(';')
-                logger.info(AMARELO + f'[#] {acoes} recebidas de {hb_id}' + RESET)
-                self.acoes = eval(acoes)
-                self.recebeu_acoes = True
-        except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO NO ROBO2: {e} [!]' + RESET)
-
-    def start_consuming(self):
-        logger.info(AMARELO + f'[#] ROBO Aguardando mensagens...' + RESET)
-        self.channel.start_consuming()
-
-    def solicita_lista(self):
-        logger.info(AMARELO + f'[#] ROBO{self.hb_id} Solicitando Lista de Ações ao HB...' + RESET)
-        pedido_bv = f"LRobo,robo{self.hb_id}"
-        self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido_bv.encode('utf-8'))
+            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
 
 if __name__ == "__main__":

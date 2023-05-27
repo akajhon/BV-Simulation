@@ -4,12 +4,13 @@ import time
 import logging
 import random
 import threading
-from collections import defaultdict
 
 # Cores
 VERDE = '\033[92m'
 VERMELHO = '\033[91m'
 AMARELO = '\033[93m'
+ROXO = '\033[95m'
+CIANO = '\033[96m'
 RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
@@ -43,13 +44,13 @@ class BolsaValores:
         self.channel.basic_consume(queue='bv_queue', on_message_callback=self.handle_message, auto_ack=True)
         threading.Thread(target=self.start_consuming).start()
 
-    def enviar_acoes(self, hb_id):
-        logger.info(AMARELO + f'[#] LISTA DE ACOES ENVIADA AOS HBs' + RESET)
-        self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista,ACAO1,100,100".encode('utf-8'))
-
     def start_consuming(self):
-        logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
+        logger.info(AMARELO + f'[?] BV aguardando mensagens...' + RESET)
         self.channel.start_consuming()
+
+    def enviar_acoes(self, hb_id):
+        logger.info(ROXO + f'[*] Lista de ações enviada da BV ao {hb_id}' + RESET)
+        self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista,ACAO1,100,100".encode('utf-8'))
 
     def handle_message(self, ch, method, properties, body):
         try:
@@ -66,14 +67,11 @@ class BolsaValores:
                 relogio_hb = float(relogio_hb)
                 hb_id = str(hb_id)
                 if relogio_hb > self.relogio + 2 or relogio_hb < self.relogio - 2:
-                    logger.info(VERMELHO + f'[!] SINCRONIZAR ENVIADO DE BV [!]' + RESET)
+                    logger.info(CIANO + f'[$] Sincronizar enviado da BV ao {hb_id}' + RESET)
                     self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Sincronizar,{self.relogio}".encode('utf-8'))
                 self.processar_pedido(nome_acao, operacao, quantidade)
         except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
-
-    def atualizar_relogio(self):
-        self.relogio += random.randint(-2, 2)
+            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
     def processar_pedido(self, nome_acao, operacao, quantidade):
         try:
@@ -86,14 +84,17 @@ class BolsaValores:
                 acao['valor'] *= 0.99
             logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
         except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
+            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
+
+    def atualizar_relogio(self):
+        self.relogio += random.randint(-2, 2)
 
     def sincronizar_relogio(self, tempo_hb, hb_id):
-        logger.info(AMARELO + f'[#] Sincronizando com : {hb_id}' + RESET)
-        logger.info(AMARELO + f'[#] Tempo do BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(CIANO + f'[$] Sincronizando com {hb_id}...' + RESET)
+        logger.info(CIANO + f'[$] Tempo da BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_hb)) / 2
-        logger.info(AMARELO + f'[#] Tempo do BV (após sincronizar): {self.formata_relogio()}' + RESET)
-        logger.info(AMARELO + '[#] Finalizada sincronização com HB' + RESET)
+        logger.info(CIANO + f'[$] Tempo da BV (após sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(CIANO + f'[$] Finalizada sincronização com o {hb_id}!' + RESET)
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
