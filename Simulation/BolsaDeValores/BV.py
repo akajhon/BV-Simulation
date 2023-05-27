@@ -35,24 +35,16 @@ class BolsaValores:
         }
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = self.connection.channel()
-
-        # Declare the exchange
         self.channel.exchange_declare(exchange='exchange_bv', exchange_type='topic')
-
-        # Declare and bind the queue
+        self.channel.exchange_declare(exchange='exchange_hb', exchange_type='direct')
         self.channel.queue_declare(queue='bv_queue')
         self.channel.queue_bind(exchange='exchange_bv', queue='bv_queue', routing_key='bv')
-
-        # Consume messages from the queue
         self.channel.basic_consume(queue='bv_queue', on_message_callback=self.handle_message, auto_ack=True)
         threading.Thread(target=self.start_consuming).start()
 
-    #     self.enviar_acoes()
-        
-    # def enviar_acoes(self):
-    #     for nome_acao, acao in self.acoes.items():
-    #         for queue in self.queues:
-    #             self.channel.basic_publish(exchange='exchange_bv', routing_key=queue, body=f"{nome_acao},{acao['quantidade']},{acao['valor']}".encode('utf-8'))
+    def enviar_acoes(self, hb_id):
+        logger.info(AMARELO + f'[#] LISTA DE ACOES ENVIADA AOS HBs' + RESET)
+        self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista,ACAO1,100,100".encode('utf-8'))
 
     def start_consuming(self):
         logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
@@ -64,8 +56,10 @@ class BolsaValores:
             if "Sincronizar" in pedido:
                 label, tempo_hb, hb_id = pedido.split(',')
                 self.sincronizar_relogio(tempo_hb, hb_id)
+            elif "Lista" in pedido:
+                label, hb_id = pedido.split(',')
+                self.enviar_acoes(hb_id)
             elif pedido:
-                #logger.info(VERMELHO + f'[!] Pedido recebido no BV:  {pedido} [!]' + RESET)
                 nome_acao, operacao, quantidade, relogio_hb, hb_id = pedido.split(',')
                 quantidade = int(quantidade)
                 relogio_hb = float(relogio_hb)

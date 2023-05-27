@@ -39,6 +39,7 @@ services:
     command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1"]
     depends_on:
       - hb
+      - bv
 
 volumes:
   rabbitmq_data:
