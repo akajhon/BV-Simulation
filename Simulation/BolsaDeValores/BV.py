@@ -22,7 +22,7 @@ handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
 
-class BolsaValores:
+class BolsaDeValores:
     def __init__(self, host='rabbitmq'):
         self.relogio = time.time()
         self.acoes = {
@@ -50,7 +50,7 @@ class BolsaValores:
 
     def enviar_acoes(self, hb_id):
         logger.info(ROXO + f'[*] Lista de ações enviada da BV ao {hb_id}' + RESET)
-        self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista,ACAO1,100,100".encode('utf-8'))
+        self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista;{self.acoes}".encode('utf-8'))
 
     def handle_message(self, ch, method, properties, body):
         try:
@@ -101,7 +101,7 @@ class BolsaValores:
 
 
 if __name__ == "__main__":
-    bv = BolsaValores()
+    bv = BolsaDeValores()
     while True:
-        bv.atualizar_relogio()
         time.sleep(10)
+        bv.atualizar_relogio()

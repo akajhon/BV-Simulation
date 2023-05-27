@@ -58,8 +58,8 @@ class HomeBroker:
             pedido = body.decode('utf-8')
             if "Lista" in pedido:
                 logger.info(ROXO + f'[*] Lista de ações recebida da BV no hb{self.hb_id}!' + RESET)
-                label, nome_acao, quantidade, valor = pedido.split(',')
-                self.acoes[nome_acao] = {'quantidade': quantidade, 'valor': valor}
+                label, acoes = pedido.split(';')
+                self.acoes = eval(acoes)
                 self.repassa_lista()
             elif "LRobo" in pedido:
                 label, robo_id = pedido.split(',')
@@ -96,5 +96,5 @@ if __name__ == "__main__":
     hb_id = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     hb = HomeBroker(hb_id=hb_id)
     while True:
-        hb.atualizar_relogio()
         time.sleep(10)
+        hb.atualizar_relogio()
