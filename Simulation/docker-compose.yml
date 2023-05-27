@@ -36,7 +36,7 @@ services:
       dockerfile: ./Robos/Dockerfile_RB
     container_name: RoboTrader01
     restart: on-failure
-    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1"]
+    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1", "2"]
     depends_on:
       - hb
       - bv

@@ -71,11 +71,11 @@ class HomeBroker:
                 label, tempo_bv = pedido.split(',')
                 self.sincronizar_relogio(tempo_bv)
             elif pedido:
-                nome_acao, operacao, quantidade = pedido.split(',')
+                nome_acao, operacao, quantidade, robo_id = pedido.split(',')
                 quantidade = int(quantidade)
                 pedido_bv = f"{nome_acao},{operacao},{quantidade},{self.relogio},hb{self.hb_id}"
                 self.channel.basic_publish(exchange='exchange_bv', routing_key='bv', body=pedido_bv.encode('utf-8'))
-                logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado a BV com sucesso!' + RESET)
+                logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao}, realizado por {robo_id}, encaminhado a BV com sucesso!' + RESET)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 

@@ -69,11 +69,11 @@ class BolsaDeValores:
                 if relogio_hb > self.relogio + 2 or relogio_hb < self.relogio - 2:
                     logger.info(CIANO + f'[$] Sincronizar enviado da BV ao {hb_id}' + RESET)
                     self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Sincronizar,{self.relogio}".encode('utf-8'))
-                self.processar_pedido(nome_acao, operacao, quantidade)
+                self.processar_pedido(nome_acao, operacao, quantidade, hb_id)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
-    def processar_pedido(self, nome_acao, operacao, quantidade):
+    def processar_pedido(self, nome_acao, operacao, quantidade, hb_id):
         try:
             acao = self.acoes[nome_acao]
             if operacao == 'compra':
@@ -82,7 +82,7 @@ class BolsaDeValores:
             elif operacao == 'venda':
                 acao['quantidade'] -= quantidade
                 acao['valor'] *= 0.99
-            logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao} processado com sucesso!' + RESET)
+            logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao}, realizado por {hb_id}, processado com sucesso!' + RESET)
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 

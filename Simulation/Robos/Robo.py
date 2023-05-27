@@ -23,8 +23,9 @@ handler.setFormatter(formatter)
 
 
 class Robo:
-    def __init__(self, hb_id='1', host='rabbitmq'):
+    def __init__(self, hb_id='1', robo_id='1', host='rabbitmq'):
         self.hb_id = hb_id
+        self.robo_id = robo_id
         self.acoes = {}
         self.recebeu_acoes = False
         self.conectado = False
@@ -32,9 +33,9 @@ class Robo:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange='exchange_robos', exchange_type='topic')
-        queue_name = f'robo{hb_id}'
+        queue_name = f'robo{robo_id}'
         self.channel.queue_declare(queue=queue_name)
-        self.channel.queue_bind(exchange='exchange_robos', queue=queue_name, routing_key=f'robo{hb_id}')
+        self.channel.queue_bind(exchange='exchange_robos', queue=queue_name, routing_key=f'robo{robo_id}')
         self.channel.exchange_declare(exchange='exchange_hb', exchange_type='direct')
         self.channel.queue_declare(queue=f'hb{hb_id}')
         self.channel.basic_consume(queue=queue_name, on_message_callback=self.handle_message, auto_ack=True)
@@ -42,19 +43,19 @@ class Robo:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logger.info(AMARELO + f'[?] robo{self.hb_id} aguardando mensagens...' + RESET)
+        logger.info(AMARELO + f'[?] robo{self.robo_id} aguardando mensagens...' + RESET)
         self.channel.start_consuming()
 
     def solicita_lista(self):
-        logger.info(ROXO + f'[*] robo{self.hb_id} solicitando lista de ações ao hb{self.hb_id}...' + RESET)
-        pedido_bv = f"LRobo,robo{self.hb_id}"
+        logger.info(ROXO + f'[*] robo{self.robo_id} solicitando lista de ações ao hb{self.hb_id}...' + RESET)
+        pedido_bv = f"LRobo,robo{self.robo_id}"
         self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido_bv.encode('utf-8'))
 
     def handle_message(self, ch, method, properties, body):
         try:
             pedido = body.decode('utf-8')
             if "Lista" in pedido:
-                logger.info(ROXO + f'[*] Lista de ações recebida no robo{self.hb_id}!' + RESET)
+                logger.info(ROXO + f'[*] Lista de ações recebida no robo{self.robo_id}!' + RESET)
                 label, acoes, hb_id = pedido.split(';')
                 logger.info(ROXO + f'[*] {acoes} recebidas de {hb_id}' + RESET)
                 self.acoes = eval(acoes)
@@ -74,7 +75,7 @@ class Robo:
                 nome_acao = random.choice(list(self.acoes.keys()))
                 operacao = random.choice(['compra', 'venda'])
                 quantidade = random.randint(1, self.acoes[nome_acao]['quantidade'])
-                pedido = f"{nome_acao},{operacao},{quantidade}"
+                pedido = f"{nome_acao},{operacao},{quantidade},robo{self.robo_id}"
                 self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
                 logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
         except Exception as e:
@@ -83,7 +84,8 @@ class Robo:
 
 if __name__ == "__main__":
     hb_id = sys.argv[1] if len(sys.argv) > 1 else '1'
-    robo = Robo(hb_id=hb_id)
+    robo_id = sys.argv[2] if len(sys.argv) > 2 else '1'
+    robo = Robo(hb_id=hb_id, robo_id=robo_id)
     while True:
         time.sleep(5)
         robo.realizar_operacao()
