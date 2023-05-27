@@ -20,49 +20,39 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
-
 class BolsaValores:
     def __init__(self, host='rabbitmq'):
         self.relogio = time.time()
-        self.acoes = defaultdict(lambda: {'quantidade': 100, 'valor': 50.0})
-        # self.acoes = {
-        #     "ACAO1": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO2": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO3": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO4": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO5": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO6": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO7": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
-        #     "ACAO8": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)}
-        # }
+        self.acoes = {
+            "ACAO1": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO2": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO3": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO4": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO5": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO6": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO7": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)},
+            "ACAO8": {'quantidade': random.randint(50, 100), 'valor': random.uniform(10.0, 100.0)}
+        }
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
         self.channel = self.connection.channel()
-        
-        #  # Declarar a exchange de tópicos
-        # self.channel.exchange_declare(exchange='topic_logs', exchange_type='topic')
 
-        # # Declarar as filas para cada HomeBroker
-        # self.queues = ['hb1', 'hb2', 'hb3', 'hb4', 'hb5']
-        # for queue in self.queues:
-        #     self.channel.queue_declare(queue=queue)
-        #     self.channel.queue_bind(exchange='topic_logs', queue=queue, routing_key=queue)
-            
-        self.channel.queue_declare(queue='bv')
-        self.channel.queue_declare(queue='hb')
-        self.channel.basic_consume(queue='bv', on_message_callback=self.handle_message, auto_ack=True)
+        # Declare the exchange
+        self.channel.exchange_declare(exchange='exchange_bv', exchange_type='topic')
+
+        # Declare and bind the queue
+        self.channel.queue_declare(queue='bv_queue')
+        self.channel.queue_bind(exchange='exchange_bv', queue='bv_queue', routing_key='bv')
+
+        # Consume messages from the queue
+        self.channel.basic_consume(queue='bv_queue', on_message_callback=self.handle_message, auto_ack=True)
         threading.Thread(target=self.start_consuming).start()
-        
-        # # Consumir mensagens de cada fila
-        # for queue in self.queues:
-        #     self.channel.basic_consume(queue=queue, on_message_callback=self.handle_message, auto_ack=True)
 
-        # threading.Thread(target=self.start_consuming).start()
-        # self.enviar_acoes()
+    #     self.enviar_acoes()
         
-        # def enviar_acoes(self):
-        #     for nome_acao, acao in self.acoes.items():
-        #         for queue in self.queues:
-        #             self.channel.basic_publish(exchange='topic_logs', routing_key=queue, body=f"{nome_acao},{acao['quantidade']},{acao['valor']}".encode('utf-8'))
+    # def enviar_acoes(self):
+    #     for nome_acao, acao in self.acoes.items():
+    #         for queue in self.queues:
+    #             self.channel.basic_publish(exchange='exchange_bv', routing_key=queue, body=f"{nome_acao},{acao['quantidade']},{acao['valor']}".encode('utf-8'))
 
     def start_consuming(self):
         logger.info(AMARELO + f'[#] Aguardando mensagens...' + RESET)
@@ -72,16 +62,18 @@ class BolsaValores:
         try:
             pedido = body.decode('utf-8')
             if "Sincronizar" in pedido:
-                label, tempo_hb = pedido.split(',')
-                self.sincronizar_relogio(tempo_hb)
+                label, tempo_hb, hb_id = pedido.split(',')
+                self.sincronizar_relogio(tempo_hb, hb_id)
             elif pedido:
-                nome_acao, operacao, quantidade, relogio_hb = pedido.split(',')
+                #logger.info(VERMELHO + f'[!] Pedido recebido no BV:  {pedido} [!]' + RESET)
+                nome_acao, operacao, quantidade, relogio_hb, hb_id = pedido.split(',')
                 quantidade = int(quantidade)
                 relogio_hb = float(relogio_hb)
+                hb_id = str(hb_id)
                 if relogio_hb > self.relogio + 2 or relogio_hb < self.relogio - 2:
-                    self.channel.basic_publish(exchange='', routing_key='hb', body=f"Sincronizar,{self.relogio}".encode('utf-8'))
+                    logger.info(VERMELHO + f'[!] SINCRONIZAR ENVIADO DE BV [!]' + RESET)
+                    self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Sincronizar,{self.relogio}".encode('utf-8'))
                 self.processar_pedido(nome_acao, operacao, quantidade)
-                # self.channel.basic_publish(exchange='', routing_key='bv', body=f"{nome_acao},{operacao},{quantidade},{self.relogio}".encode('utf-8'))
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
 
@@ -101,7 +93,8 @@ class BolsaValores:
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e} [!]' + RESET)
 
-    def sincronizar_relogio(self, tempo_hb):
+    def sincronizar_relogio(self, tempo_hb, hb_id):
+        logger.info(AMARELO + f'[#] Sincronizando com : {hb_id}' + RESET)
         logger.info(AMARELO + f'[#] Tempo do BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_hb)) / 2
         logger.info(AMARELO + f'[#] Tempo do BV (após sincronizar): {self.formata_relogio()}' + RESET)
@@ -109,7 +102,6 @@ class BolsaValores:
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
-
 
 if __name__ == "__main__":
     bv = BolsaValores()

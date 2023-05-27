@@ -26,6 +26,7 @@ services:
       dockerfile: ./Homebrokers/Dockerfile_HB
     container_name: HomeBroker01
     restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./HB.py", "1"]
     depends_on:
       - bv
 
@@ -35,6 +36,7 @@ services:
       dockerfile: ./Robos/Dockerfile_RB
     container_name: RoboTrader01
     restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1"]
     depends_on:
       - hb
 

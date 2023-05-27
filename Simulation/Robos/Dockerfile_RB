@@ -13,5 +13,3 @@ COPY ./Scripts/autostart.sh /app
 RUN chmod +x ./autostart.sh
 
 RUN pip install pika
-
-CMD ["./autostart.sh", "rabbitmq", "python", "./Robo.py"]
