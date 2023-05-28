@@ -21,7 +21,6 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%
 handler = logger.handlers[0]
 handler.setFormatter(formatter)
 
-
 class HomeBroker:
     def __init__(self, host='rabbitmq', hb_id=0):
         self.hb_id = hb_id
@@ -90,7 +89,6 @@ class HomeBroker:
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
-
 
 if __name__ == "__main__":
     hb_id = int(sys.argv[1]) if len(sys.argv) > 1 else 0
