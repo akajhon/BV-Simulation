@@ -7,7 +7,7 @@ shift
 cmd="$@"
 
 until nc -z "$host" 5672; do
-  >&2 echo -e "\033[31m[!] RabbitMQ is unavailable -> Sleeping... [!]\033[0m"
+  >&2 echo -e "\033[33m[...] RabbitMQ is unavailable -> Sleeping... [!]\033[0m"
   sleep 1
 done
 

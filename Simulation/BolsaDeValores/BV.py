@@ -6,11 +6,11 @@ import random
 import threading
 
 # Cores
-VERDE = '\033[92m'
-VERMELHO = '\033[91m'
-AMARELO = '\033[93m'
-ROXO = '\033[95m'
-CIANO = '\033[96m'
+VERDE = '\033[32m'
+VERMELHO = '\033[31m'
+AMARELO = '\033[33m'
+MAGENTA = '\033[35m'
+CIANO = '\033[36m'
 RESET = '\033[0m'
 
 pika_logger = logging.getLogger('pika')
@@ -44,11 +44,11 @@ class BolsaDeValores:
         threading.Thread(target=self.start_consuming).start()
 
     def start_consuming(self):
-        logger.info(AMARELO + f'[?] BV aguardando mensagens...' + RESET)
+        logger.info(AMARELO + f'[...] BV aguardando mensagens...' + RESET)
         self.channel.start_consuming()
 
     def enviar_acoes(self, hb_id):
-        logger.info(ROXO + f'[*] Lista de ações enviada da BV ao {hb_id}' + RESET)
+        logger.info(MAGENTA + f'[*] Lista de ações enviada da BV ao {hb_id}' + RESET)
         self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Lista;{self.acoes}".encode('utf-8'))
 
     def handle_message(self, ch, method, properties, body):
@@ -66,44 +66,44 @@ class BolsaDeValores:
                 relogio_hb = float(relogio_hb)
                 hb_id = str(hb_id)
                 if relogio_hb > self.relogio + 2 or relogio_hb < self.relogio - 2:
-                    logger.info(CIANO + f'[$] Sincronizar enviado da BV ao {hb_id}' + RESET)
+                    logger.info(CIANO + f'[#] Sincronizar enviado da BV ao {hb_id} .' + RESET)
                     self.channel.basic_publish(exchange='exchange_hb', routing_key=hb_id, body=f"Sincronizar,{self.relogio}".encode('utf-8'))
                 self.processar_pedido(nome_acao, operacao, quantidade, hb_id)
         except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
+            logger.info(VERMELHO + f'[!] Erro em \'handle_message\' no BV: {e}' + RESET)
 
     def processar_pedido(self, nome_acao, operacao, quantidade, hb_id):
         try:
             if nome_acao not in self.acoes:
-                return logger.info(VERMELHO + f'[!] A ação {nome_acao} não existe !' + RESET)
+                return logger.info(VERMELHO + f'[$] A ação {nome_acao} não existe !' + RESET)
             if operacao not in ['compra', 'venda']:
-                return logger.info(VERMELHO + f'[!] A operação {operacao} é inválida. As operações válidas são \'compra\' e \'venda\' !' + RESET)
+                return logger.info(VERMELHO + f'[$] A operação {operacao} é inválida. As operações válidas são \'compra\' e \'venda\' !' + RESET)
             acao = self.acoes[nome_acao]
             if operacao == 'compra':
                 if quantidade > acao['quantidade']:
-                    return logger.info(VERMELHO + f"[!] A quantidade a ser comprada {quantidade} é maior do que a quantidade disponível {acao['quantidade']} para {nome_acao} !" + RESET)
+                    return logger.info(VERMELHO + f"[$] A quantidade a ser comprada {quantidade} é maior do que a quantidade disponível {acao['quantidade']} para {nome_acao} !" + RESET)
                 acao['quantidade'] -= quantidade
                 acao['disponivel_para_venda'] += quantidade
                 acao['valor'] = round(acao['valor'] * 1.01, 2)
             elif operacao == 'venda':
                 if quantidade > acao['disponivel_para_venda']:
-                    return logger.info(VERMELHO + f"[!] A quantidade a ser vendida {quantidade} é maior do que a quantidade disponível para venda {acao['disponivel_para_venda']} para {nome_acao} !" + RESET)
+                    return logger.info(VERMELHO + f"[$] A quantidade a ser vendida {quantidade} é maior do que a quantidade disponível para venda {acao['disponivel_para_venda']} para {nome_acao} !" + RESET)
                 acao['disponivel_para_venda'] -= quantidade
                 acao['quantidade'] += quantidade
                 acao['valor'] = round(acao['valor'] * 0.99, 2)
-            logger.info(VERDE + f'[+] Pedido de {operacao} de {quantidade} {nome_acao}, realizado por {hb_id}, processado com sucesso!' + RESET)
+            logger.info(VERDE + f'[$] Pedido de {operacao} de {quantidade} {nome_acao}, realizado por {hb_id}, processado com sucesso!' + RESET)
         except Exception as e:
-            logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
+            logger.info(VERMELHO + f'[!] Erro em \'processar_pedido\' no BV: {e}' + RESET)
 
     def atualizar_relogio(self):
         self.relogio += random.randint(-2, 2)
 
     def sincronizar_relogio(self, tempo_hb, hb_id):
-        logger.info(CIANO + f'[$] Sincronizando com {hb_id}...' + RESET)
-        logger.info(CIANO + f'[$] Tempo da BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(CIANO + f'[#] Sincronizando com {hb_id}...' + RESET)
+        logger.info(CIANO + f'[#] Tempo da BV (antes de sincronizar): {self.formata_relogio()}' + RESET)
         self.relogio = (self.relogio + float(tempo_hb)) / 2
-        logger.info(CIANO + f'[$] Tempo da BV (após sincronizar): {self.formata_relogio()}' + RESET)
-        logger.info(CIANO + f'[$] Finalizada sincronização com o {hb_id}!' + RESET)
+        logger.info(CIANO + f'[#] Tempo da BV (após sincronizar): {self.formata_relogio()}' + RESET)
+        logger.info(CIANO + f'[#] Finalizada sincronização com o {hb_id}!' + RESET)
 
     def formata_relogio(self):
         return time.strftime('%H:%M:%S', time.localtime(self.relogio))
