@@ -1,70 +1,72 @@
 # BV-Simulation - Algoritmo de Berkeley
 
-Este projeto é uma implementação do Algoritmo de Berkeley, um algoritmo que permite sincronizar diversos computadores em um sistema distribuído. Este projeto é particularmente focado em um sistema distribuído responsável pelo controle de compra/venda de ações em uma bolsa de valores. Ele foi desenvolvido como parte dos requisitos necessários para aprovação na disciplina de CC7261 - Sistemas Distribuídos do curso de Ciência da Computação do Centro Universitário FEI, orientado pelo Prof. Calebe de Paula Bianchini
+   Este projeto é uma implementação do Algoritmo de Berkeley, um algoritmo que permite sincronizar diversos computadores em um sistema distribuído. Este projeto é particularmente focado em um sistema distribuído        responsável pelo controle de compra/venda de ações em uma bolsa de valores. Ele foi desenvolvido como parte dos requisitos necessários para aprovação na disciplina de CC7261 - Sistemas Distribuídos do curso de Ciência da  Computação do Centro Universitário FEI, orientado pelo Prof. Calebe de Paula Bianchini
 
 ***
 ## Descrição
 
-O sistema distribuído é responsável pelo controle de compra/venda de ações em uma bolsa de valores (BV). A BV detém uma lista de ações, a quantidade dessas ações disponíveis para compra/venda e o valor atual de cada ação. Todas as vezes que a quantidade ou o preço de uma ação é modificado, essas informações são propagadas para as instituições intermediárias e seus sistemas de home-brokers (HB). Os sistemas de HB são responsáveis pelo envio dos pedidos de compra/venda para a BV.
+   O sistema distribuído é responsável pelo controle de compra/venda de ações em uma bolsa de valores (BV). A BV detém uma lista de ações, a quantidade dessas ações disponíveis para compra/venda e o valor atual de cada ação. Todas as vezes que a quantidade ou o preço de uma ação é modificado, essas informações são propagadas para as instituições intermediárias e seus sistemas de home-brokers (HB). Os sistemas de HB são responsáveis pelo envio dos pedidos de compra/venda para a BV.
 
 ***
 ## Requisitos
 
-- Mínimo de 1 processo representando a BV
-- Mínimo de 2 processos de HB vinculados a BV
-- Mínimo de 2 robôs para cada HB existente
-- O relógio de cada processo, no início do seu funcionamento, deve ser recuperado do relógio do sistema
-- A cada ciclo de 10 segundos, o relógio local de cada processo deve ser modificado aleatoriamente em ±2s
+   - Mínimo de 1 processo representando a BV
+   - Mínimo de 2 processos de HB vinculados a BV
+   - Mínimo de 2 robôs para cada HB existente
+   - O relógio de cada processo, no início do seu funcionamento, deve ser recuperado do relógio do sistema
+   - A cada ciclo de 10 segundos, o relógio local de cada processo deve ser modificado aleatoriamente em ±2s
 ***
 ## Tecnologias Utilizadas
 
-- Python
-- Docker
+   - Python
+   - Docker
 
 ***
 ## Como Executar
 
-Siga estas etapas para executar este projeto:
+   Siga estas etapas para executar este projeto:
+
+1. **Conceder permissões**
+
+   Após clonar o reposítorio utilizando o comando ` git clone https://github.com/akajhon/BV-Simulation/`, é necessário conceder permissões de execução ao script principal:
+
+```
+chmod +x ./simulation.sh
+```
 
 1. **Instalar o Docker**
 
-   Primeiro, você precisa ter o Docker instalado em sua máquina. Se ainda não o instalou, você pode baixar o Docker [aqui](https://www.docker.com/products/docker-desktop).
-
-2. **Construir as Imagens Docker**
-
-   No diretório raiz do projeto, onde estão localizados os Dockerfiles e o docker-compose.yml, execute o seguinte comando para construir as imagens Docker para a Bolsa de Valores, os Home Brokers e os Robôs:
+   Primeiro, você precisa ter o Docker instalado em sua máquina. Se ainda não o instalou, você pode baixar o Docker [aqui](https://www.docker.com/products/docker-desktop) ou utilizar o parâmetro `install` junto ao script `simulation.sh`. O comando completo para esta tarefa é:
 
 ```
-docker-compose build
+./simulation.sh install
 ```
 
-3. **Iniciar os Contêineres Docker**
+2. **Construir as Imagens e Iniciar os Contêineres Docker**
 
-Depois que as imagens forem construídas, você pode iniciar todos os contêineres usando o comando:
+   No diretório raiz do projeto, onde estão localizados os Dockerfiles e o docker-compose.yml, execute o comando abaixo para construir e iniciar as imagens Docker para a Bolsa de Valores, os Home Brokers e os Robôs.  Ao utilizar este parâmetro, os logs de execução serão exibidos em tempo real.
 
 ```
-docker-compose up
+./simulation.sh start
 ```
 
 4. **Verificar a Execução**
 
-Os logs de cada contêiner podem ser visualizados usando o comando `docker logs`. Por exemplo, para ver os logs do contêiner da Bolsa de Valores, você pode usar:
+   Os logs de cada contêiner podem ser visualizados usando o comando `docker logs`. Porém, podemos usar o parâmetro `logs` junto ao script `simulation.sh` para visualizar as logs de todos os contâineres. Você pode usar:
 
 ```
-docker logs bv
+./simulation.sh logs
 ```
-
-Substitua `bv` pelo nome do contêiner que você deseja ver os logs.
 
 5. **Parar a Execução**
 
-Para parar a execução de todos os contêineres, você pode usar o comando:
+   Para parar a execução de todos os contêineres e cancelar a simulação, você pode usar o comando:
 
 ```
-docker-compose down
+./simulation.sh stop
 ```
 
-Note que todas estas etapas devem ser realizadas no terminal ou linha de comando e assumem que você está no diretório onde o docker-compose.yml e os Dockerfiles estão localizados.
+   Note que todas estas etapas devem ser realizadas no terminal ou linha de comando e assumem que você está no diretório onde o docker-compose.yml e os Dockerfiles estão localizados.
 
 ***
 ## Autores
