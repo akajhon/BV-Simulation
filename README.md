@@ -33,7 +33,9 @@
 ## Tecnologias Utilizadas
 
    - [x] Python
-   - [x] Docker
+   - [x] Docker/ Docker Compose
+   - [x] RabbitMQ
+   - [x] Shell Script
 
 ***
 ## Como Executar
