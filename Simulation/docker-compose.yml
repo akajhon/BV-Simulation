@@ -20,7 +20,7 @@ services:
     depends_on:
       - rabbitmq
 
-  hb:
+  hb1:
     build:
       context: .
       dockerfile: ./Homebrokers/Dockerfile_HB
@@ -30,7 +30,17 @@ services:
     depends_on:
       - bv
 
-  robo:
+  hb2:
+    build:
+      context: .
+      dockerfile: ./Homebrokers/Dockerfile_HB
+    container_name: HomeBroker02
+    restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./HB.py", "2"]
+    depends_on:
+      - hb1
+
+  robo1:
     build:
       context: .
       dockerfile: ./Robos/Dockerfile_RB
@@ -38,8 +48,37 @@ services:
     restart: on-failure
     command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1", "1"]
     depends_on:
-      - hb
-      - bv
+      - hb2
+
+  robo2:
+    build:
+      context: .
+      dockerfile: ./Robos/Dockerfile_RB
+    container_name: RoboTrader02
+    restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "1", "2"]
+    depends_on:
+      - robo1
+
+  robo3:
+    build:
+      context: .
+      dockerfile: ./Robos/Dockerfile_RB
+    container_name: RoboTrader03
+    restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "2", "3"]
+    depends_on:
+      - robo2
+
+  robo4:
+    build:
+      context: .
+      dockerfile: ./Robos/Dockerfile_RB
+    container_name: RoboTrader04
+    restart: on-failure
+    command: ["./autostart.sh", "rabbitmq", "python", "./Robo.py", "2", "4"]
+    depends_on:
+      - robo3
 
 volumes:
   rabbitmq_data:

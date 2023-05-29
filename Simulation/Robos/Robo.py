@@ -39,6 +39,7 @@ class Robo:
         self.channel.exchange_declare(exchange='exchange_hb', exchange_type='direct')
         self.channel.queue_declare(queue=f'hb{hb_id}')
         self.channel.basic_consume(queue=queue_name, on_message_callback=self.handle_message, auto_ack=True)
+        time.sleep(5)
         self.solicita_lista()
         threading.Thread(target=self.start_consuming).start()
 
@@ -90,14 +91,6 @@ class Robo:
                 self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
                 logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
                 self.solicita_lista()
-            # if len(self.acoes) > 0:
-            #     nome_acao = random.choice(list(self.acoes.keys()))
-            #     operacao = random.choice(['compra', 'venda'])
-            #     quantidade = random.randint(1, self.acoes[nome_acao]['quantidade'])
-            #     pedido = f"{nome_acao},{operacao},{quantidade},robo{self.robo_id}"
-            #     self.channel.basic_publish(exchange='exchange_hb', routing_key=f'hb{self.hb_id}', body=pedido.encode('utf-8'))
-            #     logger.info(VERDE + f"[+] Pedido de {operacao} de {quantidade} {nome_acao} encaminhado ao hb{self.hb_id} com sucesso!" + RESET)
-            #     self.solicita_lista()
         except Exception as e:
             logger.info(VERMELHO + f'[!] ERRO: {e}' + RESET)
 
