@@ -1,3 +1,13 @@
+```bash
+                           ****************************************************************************
+                               ___  _   __      ____ ____ __  ___ __  __ __    ___  ______ ____   ___ 
+                              / _ )| | / /____ / __//  _//  |/  // / / // /   / _ |/_  __// __ \ / _ \
+                             / _  || |/ //___/_\ \ _/ / / /|_/ // /_/ // /__ / __ | / /  / /_/ // , _/
+                            /____/ |___/     /___//___//_/  /_/ \____//____//_/ |_|/_/   \____//_/|_| 
+
+                           ****************************************************************************
+```
+
 # BV-Simulation - Algoritmo de Berkeley
 
    Este projeto é uma implementação do Algoritmo de Berkeley, um algoritmo que permite sincronizar diversos computadores em um sistema distribuído. Este projeto é particularmente focado em um sistema distribuído        responsável pelo controle de compra/venda de ações em uma bolsa de valores. Ele foi desenvolvido como parte dos requisitos necessários para aprovação na disciplina de CC7261 - Sistemas Distribuídos do curso de Ciência da  Computação do Centro Universitário FEI, orientado pelo Prof. Calebe de Paula Bianchini
