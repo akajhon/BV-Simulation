@@ -7,6 +7,8 @@
 
    O sistema distribuído é responsável pelo controle de compra/venda de ações em uma bolsa de valores (BV). A BV detém uma lista de ações, a quantidade dessas ações disponíveis para compra/venda e o valor atual de cada ação. Todas as vezes que a quantidade ou o preço de uma ação é modificado, essas informações são propagadas para as instituições intermediárias e seus sistemas de home-brokers (HB). Os sistemas de HB são responsáveis pelo envio dos pedidos de compra/venda para a BV.
 
+   Devido à implementação utilizando `docker-compose` e `dockerfiles` é possível escalar o sistema, adicionando quantos Homebrokers e Robôs desejar. A configuração Defaut inicia o ambiente com 1 Bolsa de Valores, 2 Homebrokers e 4 Robôs( 2 para cada Homebroker).
+
 ***
 ## Requisitos
 
