@@ -36,10 +36,10 @@ chmod +x ./simulation.sh
 
 1. **Instalar o Docker**
 
-   Primeiro, você precisa ter o Docker instalado em sua máquina. Se ainda não o instalou, você pode baixar o Docker [aqui](https://www.docker.com/products/docker-desktop) ou utilizar o parâmetro `install` junto ao script `simulation.sh`. O comando completo para esta tarefa é:
+   Primeiro, você precisa ter o Docker instalado em sua máquina. Se ainda não o instalou, você pode baixar o Docker [aqui](https://www.docker.com/products/docker-desktop) ou utilizar o parâmetro `requirements` junto ao script `simulation.sh`. O comando completo para esta tarefa é:
 
 ```
-./simulation.sh install
+./simulation.sh requirements
 ```
 
 2. **Construir as Imagens e Iniciar os Contêineres Docker**
