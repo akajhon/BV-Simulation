@@ -19,19 +19,21 @@
 
    Devido à implementação utilizando `docker-compose` e `dockerfiles` é possível escalar o sistema, adicionando quantos Homebrokers e Robôs desejar. A configuração Defaut inicia o ambiente com 1 Bolsa de Valores, 2 Homebrokers e 4 Robôs( 2 para cada Homebroker).
 
+  Um relatório mais completo está presente junto aos arquivos deste repositório.
+
 ***
 ## Requisitos
 
-   - Mínimo de 1 processo representando a BV
-   - Mínimo de 2 processos de HB vinculados a BV
-   - Mínimo de 2 robôs para cada HB existente
-   - O relógio de cada processo, no início do seu funcionamento, deve ser recuperado do relógio do sistema
-   - A cada ciclo de 10 segundos, o relógio local de cada processo deve ser modificado aleatoriamente em ±2s
+  - [x] Mínimo de 1 processo representando a BV
+  - [x] Mínimo de 2 processos de HB vinculados a BV
+  - [x] Mínimo de 2 robôs para cada HB existente
+  - [x] O relógio de cada processo, no início do seu funcionamento, deve ser recuperado do relógio do sistema
+  - [x] A cada ciclo de 10 segundos, o relógio local de cada processo deve ser modificado aleatoriamente em ±2s
 ***
 ## Tecnologias Utilizadas
 
-   - Python
-   - Docker
+   - [x] Python
+   - [x] Docker
 
 ***
 ## Como Executar
