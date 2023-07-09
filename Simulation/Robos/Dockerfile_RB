@@ -4,7 +4,7 @@ ENV TZ=America/Sao_Paulo
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y netcat
+RUN apt-get update && apt-get install -y netcat-openbsd
 
 COPY ./Robos/Robo.py /app
 
